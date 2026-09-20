@@ -27,14 +27,13 @@ def run_pipeline():
     start_time = time.time()
     logger.info("====================================================================")
     logger.info("STARTING AUTOMOTIVE AFTERMARKET INTELLIGENCE MASTER PIPELINE")
-    logger.info("====================================================================")
-
     steps = [
         ("Step 1: Data Generation & Pre-flight Validation", "scripts/generate_data.py"),
         ("Step 2: Database Build & Table Ingestion", "scripts/build_database.py"),
         ("Step 3: Exploratory Data Analysis (EDA)", "src/analytics/eda_engine.py"),
         ("Step 4: Analytical Decision Layer Exports", "scripts/export_analytics.py"),
         ("Step 5: Excel Scenario Model Generation", "src/analytics/excel_scenario_generator.py"),
+        ("Step 6: Pre-rendered Notebooks & Visuals Generation", "scripts/build_notebooks.py"),
     ]
 
     for label, script in steps:

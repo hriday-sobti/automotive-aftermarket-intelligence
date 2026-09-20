@@ -2,11 +2,13 @@
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Database: SQLite & PostgreSQL](https://img.shields.io/badge/Database-SQLite%20%7C%20PostgreSQL-darkblue.svg)](https://www.sqlite.org/)
-[![Tests: Pytest Passing](https://img.shields.io/badge/Tests-Pytest%20Passing-brightgreen.svg)](tests/)
+[![Tests: 229 Passing](https://img.shields.io/badge/Tests-229%20Passing-brightgreen.svg)](tests/)
 [![Power BI Ready](https://img.shields.io/badge/BI-Power%20BI%20Ready-yellow.svg)](powerbi/)
 [![Excel Scenario Model](https://img.shields.io/badge/Excel-Scenario%20Model-green.svg)](excel/)
+[![Author: Hriday Singh Sobti](https://img.shields.io/badge/Author-Hriday%20Singh%20Sobti-navy.svg)](https://github.com/hriday-sobti)
 
 > **Project Classification:** Enterprise Commercial Analytics & Decision-Support System  
+> **Author & Lead Analytics Engineer:** Hriday Singh Sobti (hridaysobti@gmail.com)  
 > **Data Notice:** Explicitly and consistently engineered using **Synthetic / Project-Generated Data** simulating a multi-tier automotive wholesale aftermarket ecosystem (`RANDOM_SEED = 42`).
 
 ---
@@ -57,9 +59,19 @@ This platform integrates **synthetic domain simulation, automated data validatio
 
 ---
 
-## 3. Data Model & Star Schema
+## 3. Visual Dashboard & Analytical Previews
 
-The database architecture is designed as a star schema with clearly defined fact and dimension table grains:
+| Executive Sales Overview | Inventory Stockout Risk Matrix |
+| :---: | :---: |
+| ![Category Revenue](powerbi/screenshots/category_revenue.png) | ![Inventory Risk Matrix](powerbi/screenshots/inventory_risk_matrix.png) |
+| **80/20 Pareto Concentration Curve** | **Trade Promotion Effectiveness (PEI)** |
+| ![Pareto Curve](powerbi/screenshots/pareto_curve.png) | ![Promotion Effectiveness](powerbi/screenshots/promotion_effectiveness.png) |
+
+---
+
+## 4. Data Model & Star Schema
+
+The database architecture is designed as a star schema with clearly defined fact and dimension table grains (`docs/data-model.md`):
 
 ### Dimensional Entities
 - `DIM_DATE`: Calendar day grain (731 rows, 2024-01-01 to 2025-12-31).
@@ -79,7 +91,7 @@ The database architecture is designed as a star schema with clearly defined fact
 
 ---
 
-## 4. Analytical Modules & Methodologies
+## 5. Analytical Modules & Methodologies
 
 ### Layer 1: Sales Performance & Pareto Concentration
 - **Pareto Intelligence:** Top 29.3% of catalog SKUs generate 80.0% of cumulative revenue (Class A champions concentrated in Braking Systems and Filtration).
@@ -119,7 +131,7 @@ The database architecture is designed as a star schema with clearly defined fact
 
 ---
 
-## 5. Decision-Support Deliverables
+## 6. Decision-Support Deliverables
 
 ### Microsoft Power BI Dashboard Suite
 Four fully documented dashboard pages with DAX semantic models (`powerbi/data-model.md`):
@@ -138,11 +150,11 @@ Four fully documented dashboard pages with DAX semantic models (`powerbi/data-mo
 
 ---
 
-## 6. Quick Start & Execution Guide
+## 7. Quick Start & Execution Guide
 
 ### Prerequisites
 - Python 3.10+ (Tested on Python 3.14.6 x64)
-- Standard scientific Python libraries: `pandas`, `numpy`, `statsmodels`, `openpyxl`, `sqlalchemy`, `pyyaml`, `pytest`
+- Standard scientific Python libraries: `pandas`, `numpy`, `statsmodels`, `openpyxl`, `sqlalchemy`, `pyyaml`, `pytest`, `matplotlib`
 
 ### Single-Command Pipeline Execution
 Run the complete end-to-end platform with a single command:
@@ -155,16 +167,17 @@ This automatically executes:
 3. `src/analytics/eda_engine.py`: Performs exploratory data analysis and generates statistical summaries.
 4. `scripts/export_analytics.py`: Computes risk scores, safety stock, promotion uplift, forecasting benchmarks, and opportunity matrices.
 5. `src/analytics/excel_scenario_generator.py`: Generates the live Excel commercial scenario workbook.
-6. `tests/`: Runs the automated unit and integration test suite via `pytest`.
+6. `scripts/build_notebooks.py`: Compiles and executes all 6 Jupyter notebooks with rendered charts.
+7. `tests/`: Runs the complete automated test suite (**229 passing tests**) via `pytest`.
 
-### Run Automated Tests
+### Run Automated Tests (229 Tests)
 ```bash
 python -m pytest tests/
 ```
 
 ---
 
-## 7. Repository Structure
+## 8. Repository Structure
 
 ```text
 automotive-aftermarket-intelligence/
@@ -185,9 +198,19 @@ automotive-aftermarket-intelligence/
 │   ├── domain-understanding.md               # Aftermarket business ecosystem & value chain
 │   ├── blueprint-architecture.md             # Technical architecture & mathematical blueprint
 │   ├── data-dictionary.md                    # Formal dictionary for all tables and fields
+│   ├── data-model.md                         # Dimensional star-schema & grain specifications
+│   ├── methodology.md                        # Analytical methods & baseline standards
 │   ├── analytical-definitions.md             # Business formulas, inputs, and definitions
 │   ├── assumptions.md                        # Methodological assumptions & guardrails
 │   └── environment.md                        # Hardware, OS, and tool runtime specifications
+│
+├── notebooks/                                # Executed Jupyter notebooks with charts
+│   ├── 01_data_generation_validation.ipynb
+│   ├── 02_eda.ipynb
+│   ├── 03_sales_analysis.ipynb
+│   ├── 04_inventory_risk.ipynb
+│   ├── 05_promotion_analysis.ipynb
+│   └── 06_forecasting.ipynb
 │
 ├── src/
 │   ├── data_generation/                      # Dimension, demand, promotion, sales & stock simulation
@@ -201,12 +224,15 @@ automotive-aftermarket-intelligence/
 │
 ├── sql/
 │   ├── schema/01_create_tables.sql           # ANSI SQL DDL with PK/FK constraints & indexes
+│   ├── staging/01_staging_tables.sql         # SQL staging buffer table definitions
+│   ├── transformations/01_load_facts.sql     # Staging to Fact/Dimension ETL transformations
 │   ├── analytics/01_analytical_views.sql     # Analytical views, CTEs, and window functions
 │   └── quality_checks/01_integrity_checks.sql# Automated SQL data integrity test suite
 │
 ├── powerbi/
-│   ├── README.md                             # Power BI setup and import guide
-│   └── data-model.md                         # Semantic model schema & DAX measure formulas
+│   ├── README.md                             # Power BI setup and visual gallery
+│   ├── data-model.md                         # Semantic model schema & DAX measure formulas
+│   └── screenshots/                          # Rendered dashboard visual PNGs
 │
 ├── excel/
 │   ├── README.md                             # Spreadsheet guide and calculation notes
@@ -221,15 +247,24 @@ automotive-aftermarket-intelligence/
 │   ├── validate_data.py                      # Standalone validation runner
 │   ├── build_database.py                     # Database DDL compiler and data loader
 │   ├── export_analytics.py                   # Analytical decision layer export runner
+│   ├── build_notebooks.py                    # Pre-populated notebook & chart builder
 │   └── run_pipeline.py                       # Single-command master orchestrator
 │
 └── tests/
-    └── test_platform.py                      # Unit tests for financial reconciliation & logic
+    ├── test_boundary_parametric_cases.py     # 130 parametric stress and boundary tests
+    ├── test_data_generation.py               # 30 generator scale & entity tests
+    ├── test_validation.py                    # 15 pre-flight assertion & reject tests
+    ├── test_database_and_excel.py            # 13 SQL views & dynamic Excel formula tests
+    ├── test_inventory_logic.py               # 12 safety stock & risk scoring tests
+    ├── test_metrics.py                       # 8 sales intelligence & Pareto tests
+    ├── test_opportunity_and_simulator.py     # 8 4-quadrant & decision simulator tests
+    ├── test_forecasting.py                   # 7 holdout split & backtest error tests
+    └── test_platform.py                      # 6 reconciliation & platform tests
 ```
 
 ---
 
-## 8. Analytical Traceability & Integrity Guarantee
+## 9. Analytical Traceability & Integrity Guarantee
 
 Every number presented in executive reports, Power BI models, and analytical views is strictly traceable back to source calculations:
 - **Financial Reconciliation:** $\text{Gross Profit} \equiv \text{Revenue} - \text{Cost}$ across all 88,659 transactions with zero discrepancy.

@@ -9,7 +9,7 @@ description = "Automotive Aftermarket Sales & Trade Marketing Intelligence Platf
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    { name = "Lead Business Analyst & Analytics Engineer" }
+    { name = "Hriday Singh Sobti", email = "hridaysobti@gmail.com" }
 ]
 dependencies = [
     "pandas>=2.0.0",
