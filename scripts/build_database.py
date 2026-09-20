@@ -77,14 +77,23 @@ def build_database():
             conn.commit()
 
         logger.info(f"[PASS] {table_name} successfully populated with {len(df)} records.")
+    # 3. Compile Analytical Views
+    views_path = config["database"]["views_ddl_path"]
+    if os.path.exists(views_path):
+        logger.info(f"Compiling analytical views from {views_path}...")
+        with open(views_path, "r", encoding="utf-8") as f:
+            views_script = f.read()
+        with sqlite3.connect(db_path) as conn:
+            conn.cursor().executescript(views_script)
+            conn.commit()
+        logger.info("[PASS] Analytical views compiled successfully.")
 
-    # 3. Quick row count audit
+    # 4. Quick row count audit
     logger.info("Verifying database load counts:")
     with engine.connect() as conn:
         for table_name, _ in load_sequence:
             res = conn.execute(text(f"SELECT COUNT(*) FROM {table_name}")).scalar()
             logger.info(f"  - {table_name}: {res:,} rows")
-
     logger.info("Database build and ingestion completed.")
 
 
