@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for data validation, assertions, and reject logging."""
+# Unit tests for pre-flight data validation rules and financial reconciliation assertions.
 
 import pytest
 import pandas as pd

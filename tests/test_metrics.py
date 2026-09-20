@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for commercial sales intelligence and promotion uplift metrics."""
+# Unit tests for sales KPIs, margin calculations, and Pareto classification.
 
 import pytest
 import numpy as np

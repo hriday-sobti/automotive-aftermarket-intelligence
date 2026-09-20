@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for time-series forecasting, holdout backtesting, and error metrics."""
+# Unit tests for demand forecasting models, holdout evaluation splits, and error metrics.
 
 import pytest
 import numpy as np

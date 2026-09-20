@@ -1,10 +1,6 @@
--- ============================================================================
--- Automotive Aftermarket Sales & Trade Marketing Intelligence Platform
--- SQL Analytical Layer: Core Views, Aggregations, Window Functions & CTEs
--- ============================================================================
+-- Analytical views for sales, regional mix, distributor growth, promotions, and inventory.
 
--- 1. VIEW: Monthly Sales & YoY Growth Intelligence
--- Reconciles monthly sales volume, net revenue, gross margin %, and prior-year comparisons.
+-- 1. Monthly revenue, units, and year-over-year growth
 DROP VIEW IF EXISTS v_monthly_sales_performance;
 CREATE VIEW v_monthly_sales_performance AS
 WITH monthly_agg AS (
@@ -59,7 +55,7 @@ SELECT
     END AS yoy_units_growth_pct
 FROM yoy_calc;
 
--- 2. VIEW: Category & Regional Contribution Mix
+-- 2. Category and regional revenue breakdown
 DROP VIEW IF EXISTS v_category_regional_mix;
 CREATE VIEW v_category_regional_mix AS
 WITH category_reg_summary AS (
@@ -97,7 +93,7 @@ SELECT
 FROM category_reg_summary c
 JOIN totals t ON c.year = t.year AND c.region_id = t.region_id;
 
--- 3. VIEW: Distributor Commercial Performance & Growth Ranking
+-- 3. Distributor growth rankings and margin performance
 DROP VIEW IF EXISTS v_distributor_performance_ranking;
 CREATE VIEW v_distributor_performance_ranking AS
 WITH dist_yearly AS (
@@ -144,7 +140,7 @@ SELECT
     DENSE_RANK() OVER (PARTITION BY region_name ORDER BY rev_2025 DESC) AS regional_revenue_rank
 FROM pivoted;
 
--- 4. VIEW: Trade Promotion Effectiveness & Net Incremental Profit
+-- 4. Trade campaign performance and discount concessions
 DROP VIEW IF EXISTS v_trade_promotion_evaluation;
 CREATE VIEW v_trade_promotion_evaluation AS
 SELECT 
@@ -167,7 +163,7 @@ GROUP BY
     p.promotion_id, p.campaign_name, p.campaign_type, p.target_category,
     p.target_region, p.discount_pct, p.budget_inr;
 
--- 5. VIEW: Inventory Turnover & Stockout Exposure Summary
+-- 5. Inventory turnover and stockout frequency by distributor
 DROP VIEW IF EXISTS v_inventory_stockout_summary;
 CREATE VIEW v_inventory_stockout_summary AS
 SELECT 

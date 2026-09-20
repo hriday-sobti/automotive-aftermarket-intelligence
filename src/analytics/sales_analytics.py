@@ -1,30 +1,22 @@
-"""Sales performance intelligence module for Automotive Aftermarket Platform.
+# Commercial sales calculations and distributor performance metrics.
 
-Calculates core commercial metrics:
-- Revenue, Units, Cost, Gross Profit, Gross Margin %
-- Prior-year comparisons and YoY Growth rates
-- Pareto SKU revenue concentration analysis (Class A, B, C)
-- Category and Regional sales mix contributions
-- Daily sales velocity across products and distributors
-"""
-
-from typing import Dict, Tuple
+from typing import Dict
 import numpy as np
 import pandas as pd
 
 
 def compute_executive_kpis(sales_df: pd.DataFrame) -> Dict[str, float]:
-    """Compute top-level executive commercial KPIs."""
+    """Roll up high-level revenue, units, margin, and annual growth."""
     total_rev = float(sales_df["revenue"].sum())
     total_cost = float(sales_df["cost"].sum())
     total_units = int(sales_df["quantity"].sum())
     total_gp = float(sales_df["gross_profit"].sum())
-    gm_pct = (total_gp / total_rev) * 100.0 if total_rev > 0 else 0.0
+    gm_pct = (total_gp / total_rev * 100.0) if total_rev > 0 else 0.0
 
-    # YoY Growth: compare 2025 vs 2024
+    # Year-over-year: 2025 vs 2024
     rev_2024 = float(sales_df[sales_df["year"] == 2024]["revenue"].sum())
     rev_2025 = float(sales_df[sales_df["year"] == 2025]["revenue"].sum())
-    yoy_growth = ((rev_2025 - rev_2024) / rev_2024) * 100.0 if rev_2024 > 0 else 0.0
+    yoy_growth = ((rev_2025 - rev_2024) / rev_2024 * 100.0) if rev_2024 > 0 else 0.0
 
     return {
         "total_revenue": round(total_rev, 2),
@@ -41,7 +33,7 @@ def compute_executive_kpis(sales_df: pd.DataFrame) -> Dict[str, float]:
 
 
 def compute_category_intelligence(sales_df: pd.DataFrame, products_df: pd.DataFrame) -> pd.DataFrame:
-    """Analyze sales, profitability, and unit volume by product category."""
+    """Group sales and margins by product line to see category mix."""
     merged = sales_df.merge(products_df[["sku_id", "product_category"]], on="sku_id")
     total_rev = merged["revenue"].sum()
 
@@ -60,7 +52,7 @@ def compute_category_intelligence(sales_df: pd.DataFrame, products_df: pd.DataFr
 
 
 def compute_distributor_growth(sales_df: pd.DataFrame, distributors_df: pd.DataFrame) -> pd.DataFrame:
-    """Evaluate distributor YoY performance, revenue ranking, and target attainment."""
+    """Track distributor growth year-over-year and compare against annual targets."""
     yearly = (
         sales_df.groupby(["distributor_id", "year"])
         .agg(

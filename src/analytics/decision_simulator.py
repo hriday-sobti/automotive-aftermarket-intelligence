@@ -1,28 +1,15 @@
-"""Manager Commercial Decision Simulator.
-
-Simulates practical management decision support:
-When a commercial business leader selects:
-Region -> Distributor -> Product Category -> SKU
-The system delivers a unified 360-degree commercial diagnostic:
-- Current Sales & YoY Growth
-- Realized Gross Margin %
-- Inventory Position & Days of Inventory (DOI)
-- Forward Forecast Demand
-- Composite Stockout Risk Score & Risk Category
-- Applicable Promotion Effectiveness
-- Prescriptive Recommended Action & Primary Driver
-"""
+# Decision simulator for reviewing distributor and SKU commercial health.
 
 import os
 import sys
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 
 class ManagerDecisionSimulator:
-    """Unified decision-support interface for aftermarket category managers and distributor leads."""
+    """Provides a quick diagnostic view of any distributor-SKU combination."""
 
     def __init__(self, processed_dir: str = "data/processed"):
         self.processed_dir = processed_dir
@@ -32,19 +19,13 @@ class ManagerDecisionSimulator:
         self.regions_df = pd.read_csv(os.path.join(processed_dir, "dim_region.csv"))
         self.inventory_df = pd.read_csv(os.path.join(processed_dir, "fact_inventory.csv"))
 
-    def query_sku_distributor(
-        self,
-        distributor_id: str,
-        sku_id: str
-    ) -> Dict[str, Any]:
-        """Return full 360-degree commercial diagnostics for a given distributor-SKU combination."""
-        # 1. Product details
+    def query_sku_distributor(self, distributor_id: str, sku_id: str) -> Dict[str, Any]:
+        """Looks up sales, inventory coverage, risk level, and suggested actions."""
         prod = self.products_df[self.products_df["sku_id"] == sku_id].iloc[0]
-        # 2. Distributor details
         dist = self.distributors_df[self.distributors_df["distributor_id"] == distributor_id].iloc[0]
         reg = self.regions_df[self.regions_df["region_id"] == dist["region_id"]].iloc[0]
 
-        # 3. Sales performance
+        # Filter sales for this distributor + SKU
         d_sales = self.sales_df[
             (self.sales_df["distributor_id"] == distributor_id) &
             (self.sales_df["sku_id"] == sku_id)
@@ -60,7 +41,7 @@ class ManagerDecisionSimulator:
         margin_pct = (gp_2025 / rev_2025 * 100.0) if rev_2025 > 0 else 0.0
         yoy_growth = ((rev_2025 - rev_2024) / rev_2024 * 100.0) if rev_2024 > 0 else 0.0
 
-        # 4. Inventory position
+        # Latest stock position
         d_inv = self.inventory_df[
             (self.inventory_df["distributor_id"] == distributor_id) &
             (self.inventory_df["sku_id"] == sku_id)
@@ -69,11 +50,11 @@ class ManagerDecisionSimulator:
         current_stock = int(d_inv.iloc[-1]["closing_stock"]) if not d_inv.empty else 0
         lead_time = int(prod["standard_lead_time_days"])
 
-        # Daily sales velocity (units/day)
+        # Daily sales velocity (run-rate over the year)
         daily_velocity = units_2025 / 365.0
         doi = round(current_stock / daily_velocity, 1) if daily_velocity > 0 else 999.0
 
-        # Risk heuristic
+        # Simple operational risk categorization based on coverage vs lead time
         coverage_ratio = doi / max(1, lead_time * 1.5)
         if coverage_ratio < 0.7:
             risk_cat = "Critical"

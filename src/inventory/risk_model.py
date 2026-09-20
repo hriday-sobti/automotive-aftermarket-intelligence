@@ -1,23 +1,6 @@
-"""Inventory intelligence and Composite Stockout Risk Model.
+# Composite stockout risk scoring model.
 
-Quantifies availability risk per SKU-Distributor combination:
-1. Days of Inventory (DOI) = Current Stock / Average Daily Sales
-2. Normalized Risk Factors (0.0 to 100.0):
-   - Inventory Coverage Risk (35% weight)
-   - Demand Pressure Risk (25% weight)
-   - Lead Time Exposure Risk (20% weight)
-   - Demand Volatility Risk / CV (10% weight)
-   - Historical Stockout Risk (10% weight)
-3. Composite Stockout Risk Score = Weighted linear sum
-4. Risk Categorization:
-   - Low Risk (< 30)
-   - Watch (30 - 55)
-   - High Risk (55 - 75)
-   - Critical (> 75)
-5. Primary Risk Driver identification and actionable operational recommendation.
-"""
-
-from typing import Dict, Tuple
+from typing import Dict
 import numpy as np
 import pandas as pd
 
@@ -29,11 +12,14 @@ def compute_stockout_risk_model(
     distributors_df: pd.DataFrame,
     config: Dict
 ) -> pd.DataFrame:
-    """Calculate composite stockout risk scores and prescriptive replenishment actions."""
+    """Calculates a composite stockout risk score (0-100) per distributor-SKU combination
+
+    by combining coverage days, sales pressure, lead times, volatility, and stockout history.
+    """
     weights = config["inventory_risk"]["weights"]
     thresholds = config["inventory_risk"]["thresholds"]
 
-    # 1. Latest Stock Position per (Distributor, SKU)
+    # 1. Latest Stock Position
     latest_dates = inventory_df.groupby(["distributor_id", "sku_id"])["date"].max().reset_index()
     latest_inv = inventory_df.merge(latest_dates, on=["distributor_id", "sku_id", "date"])
 
@@ -45,7 +31,7 @@ def compute_stockout_risk_model(
     )
     hist_stockouts["stockout_rate"] = hist_stockouts["stockout_count"] / hist_stockouts["total_observations"]
 
-    # 3. Demand Velocity & Volatility over last 90 days
+    # 3. Demand Velocity & Volatility over trailing 90 days
     max_date = pd.to_datetime(sales_df["date"]).max()
     cutoff_date = (max_date - pd.Timedelta(days=90)).strftime("%Y-%m-%d")
     recent_sales = sales_df[sales_df["date"] >= cutoff_date]
@@ -65,7 +51,6 @@ def compute_stockout_risk_model(
         )
         .reset_index()
     )
-    # Fill standard deviation nulls with 0 for single-sale items
     demand_stats["std_daily_sales"] = demand_stats["std_daily_sales"].fillna(0.0)
     demand_stats["daily_sales_velocity"] = np.round(demand_stats["total_recent_sales"] / 90.0, 2)
     demand_stats["cv_demand"] = np.where(
@@ -74,7 +59,7 @@ def compute_stockout_risk_model(
         0.0
     )
 
-    # Merge all components
+    # Merge components
     m = latest_inv.merge(demand_stats, on=["distributor_id", "sku_id"], how="left")
     m = m.merge(hist_stockouts, on=["distributor_id", "sku_id"], how="left")
     m = m.merge(products_df[["sku_id", "product_name", "product_category", "standard_lead_time_days"]], on="sku_id", how="left")
@@ -89,25 +74,23 @@ def compute_stockout_risk_model(
     m["days_of_inventory"] = np.round(m["closing_stock"] / m["daily_sales_velocity"], 1)
 
     # 4. Normalized Component Scores (0 to 100)
-    # Factor A: Inventory Coverage Risk (high when DOI < lead time)
-    # Target safety coverage is 1.5x lead time
+    # Inventory Coverage Risk: high when DOI is less than 1.5x lead time
     coverage_ratio = m["days_of_inventory"] / (m["lead_time_days"] * 1.5)
     score_coverage = np.clip((1.0 - coverage_ratio) * 100.0, 0.0, 100.0)
 
-    # Factor B: Demand Pressure Risk (high when recent velocity is high relative to current stock)
+    # Demand Pressure Risk: ratio of lead-time sales to stock on hand
     demand_ratio = (m["daily_sales_velocity"] * m["lead_time_days"]) / np.maximum(m["closing_stock"], 1)
     score_demand = np.clip(demand_ratio * 35.0, 0.0, 100.0)
 
-    # Factor C: Lead Time Exposure Risk (normalized against max automotive lead time ~ 45 days)
+    # Lead Time Exposure: scaled to 45-day max lead time
     score_lead_time = np.clip((m["lead_time_days"] / 45.0) * 100.0, 0.0, 100.0)
 
-    # Factor D: Volatility Risk (CV of demand scaled)
+    # Volatility Risk: coefficient of variation scaled
     score_volatility = np.clip(m["cv_demand"] * 50.0, 0.0, 100.0)
 
-    # Factor E: Historical Stockout Rate (percentage of zero days)
+    # Historical Stockout Rate
     score_hist_stockout = np.clip(m["stockout_rate"] * 250.0, 0.0, 100.0)
 
-    # Composite Risk Calculation
     m["score_coverage"] = np.round(score_coverage, 1)
     m["score_demand"] = np.round(score_demand, 1)
     m["score_lead_time"] = np.round(score_lead_time, 1)
@@ -123,7 +106,6 @@ def compute_stockout_risk_model(
     )
     m["stockout_risk_score"] = np.round(composite, 1)
 
-    # Classification
     def classify_risk(score: float) -> str:
         if score >= thresholds["high"]:
             return "Critical"
@@ -135,7 +117,6 @@ def compute_stockout_risk_model(
 
     m["risk_category"] = m["stockout_risk_score"].apply(classify_risk)
 
-    # Identify Primary Driver
     def get_primary_driver(row) -> str:
         drivers = {
             "Low Inventory Coverage": row["score_coverage"] * weights["inventory_coverage"],
@@ -148,7 +129,6 @@ def compute_stockout_risk_model(
 
     m["primary_risk_driver"] = m.apply(get_primary_driver, axis=1)
 
-    # Actionable Recommendation
     def get_recommendation(cat: str) -> str:
         if cat == "Critical":
             return "Emergency Expedited Reorder & Priority Logistics"

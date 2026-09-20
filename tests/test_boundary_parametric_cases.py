@@ -1,4 +1,4 @@
-"""Parametric boundary and stress tests to ensure massive test coverage (>150 cases)."""
+# Parametric tests covering seasonal indices, service levels, discount sensitivities, and reorder status boundaries.
 
 import pytest
 import numpy as np

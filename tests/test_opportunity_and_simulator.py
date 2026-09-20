@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for the 4-quadrant opportunity matrix and manager decision simulator."""
+# Unit tests for the opportunity matrix classification and decision simulator lookups.
 
 import pytest
 import pandas as pd

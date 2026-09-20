@@ -1,20 +1,4 @@
-"""Demand forecasting engine with holdout evaluation for Automotive Aftermarket.
-
-Grain: SKU × Region × Week
-Methodology:
-1. Temporal split without data leakage:
-   - Training window: 2024-01-01 to 2025-08-31 (87 weeks)
-   - Holdout evaluation window: 2025-09-01 to 2025-12-31 (17 weeks)
-2. Compares explainable forecasting models:
-   - Naive Baseline (Prior Period Demand)
-   - 4-Week Simple Moving Average (SMA)
-   - 8-Week Exponential Smoothing (SES / Holt's Exponential Smoothing)
-3. Performance Metrics:
-   - MAE (Mean Absolute Error)
-   - RMSE (Root Mean Squared Error)
-   - MAPE (Mean Absolute Percentage Error)
-4. Selects optimal model per category and generates forward operational forecast.
-"""
+# Out-of-sample demand forecasting and holdout model evaluation.
 
 from typing import Dict, Tuple
 import numpy as np
@@ -26,14 +10,17 @@ def evaluate_forecasting_models(
     demand_df: pd.DataFrame,
     split_date: str = "2025-09-01"
 ) -> Tuple[pd.DataFrame, Dict[str, float]]:
-    """Train comparative forecasting models and evaluate errors on holdout dataset."""
+    """Fits Naive, 4-Week Moving Average, and Simple Exponential Smoothing models on training data,
+
+    then evaluates predictions on a 17-week holdout period to measure out-of-sample accuracy.
+    """
     df = demand_df.copy()
     df["week_start_date"] = pd.to_datetime(df["week_start_date"])
 
     train_df = df[df["week_start_date"] < pd.to_datetime(split_date)]
     test_df = df[df["week_start_date"] >= pd.to_datetime(split_date)]
 
-    # Weekly aggregate demand per SKU across regions
+    # Weekly aggregate demand per SKU
     train_agg = train_df.groupby(["sku_id", "week_start_date"])["estimated_latent_demand"].sum().reset_index()
     test_agg = test_df.groupby(["sku_id", "week_start_date"])["estimated_latent_demand"].sum().reset_index()
 
@@ -59,10 +46,10 @@ def evaluate_forecasting_models(
         test_dates = sku_test["week_start_date"].tolist()
         horizon = len(test_actuals)
 
-        # 1. Naive Model: Last observed value projected forward
+        # 1. Naive persistence: project last observed value forward
         pred_naive = np.full(horizon, train_series[-1])
 
-        # 2. SMA (4-week moving average of last 4 training weeks)
+        # 2. 4-Week Simple Moving Average of trailing training weeks
         pred_sma = np.full(horizon, np.mean(train_series[-4:]))
 
         # 3. Simple Exponential Smoothing
@@ -72,7 +59,7 @@ def evaluate_forecasting_models(
         except Exception:
             pred_ses = pred_sma
 
-        # Compute Errors
+        # Calculate error metrics across models
         for name, pred in [("naive", pred_naive), ("sma_4", pred_sma), ("exp_smooth", pred_ses)]:
             mae = np.mean(np.abs(test_actuals - pred))
             rmse = np.sqrt(np.mean((test_actuals - pred) ** 2))
@@ -92,7 +79,7 @@ def evaluate_forecasting_models(
                 "forecast_exp_smooth": round(p_ses, 1)
             })
 
-    # Summary Benchmark Table
+    # Summary table across models
     summary = {}
     for m_name, errs in model_errors.items():
         summary[m_name] = {

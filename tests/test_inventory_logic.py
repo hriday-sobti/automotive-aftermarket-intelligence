@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for inventory simulation, safety stock, ROP, and risk scoring."""
+# Unit tests for inventory sizing, safety stock, ROP, and risk scoring.
 
 import pytest
 import numpy as np

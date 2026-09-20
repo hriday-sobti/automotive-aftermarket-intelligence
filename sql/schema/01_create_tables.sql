@@ -1,9 +1,5 @@
--- ============================================================================
--- Automotive Aftermarket Sales & Trade Marketing Intelligence Platform
--- DDL Schema Definition (PostgreSQL & SQLite compatible ANSI SQL)
--- ============================================================================
+-- Star schema table definitions (compatible with PostgreSQL and SQLite).
 
--- Drop tables if re-initializing
 DROP TABLE IF EXISTS fact_promotion_performance;
 DROP TABLE IF EXISTS fact_inventory;
 DROP TABLE IF EXISTS fact_demand;
@@ -17,7 +13,6 @@ DROP TABLE IF EXISTS dim_vehicle_segment;
 DROP TABLE IF EXISTS dim_region;
 DROP TABLE IF EXISTS dim_date;
 
--- 1. DIM_DATE
 CREATE TABLE dim_date (
     date VARCHAR(10) PRIMARY KEY,
     year INTEGER NOT NULL,
@@ -33,7 +28,6 @@ CREATE TABLE dim_date (
     is_weekend INTEGER NOT NULL
 );
 
--- 2. DIM_REGION
 CREATE TABLE dim_region (
     region_id VARCHAR(10) PRIMARY KEY,
     region_name VARCHAR(50) NOT NULL,
@@ -42,7 +36,6 @@ CREATE TABLE dim_region (
     parc_size_multiplier NUMERIC(4, 2) NOT NULL
 );
 
--- 3. DIM_VEHICLE_SEGMENT
 CREATE TABLE dim_vehicle_segment (
     segment_id VARCHAR(10) PRIMARY KEY,
     segment_name VARCHAR(50) NOT NULL,
@@ -51,7 +44,6 @@ CREATE TABLE dim_vehicle_segment (
     maintenance_intensity NUMERIC(4, 2) NOT NULL
 );
 
--- 4. DIM_PRODUCT
 CREATE TABLE dim_product (
     sku_id VARCHAR(20) PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
@@ -67,7 +59,6 @@ CREATE TABLE dim_product (
     FOREIGN KEY (vehicle_segment) REFERENCES dim_vehicle_segment(segment_id)
 );
 
--- 5. DIM_DISTRIBUTOR
 CREATE TABLE dim_distributor (
     distributor_id VARCHAR(10) PRIMARY KEY,
     distributor_name VARCHAR(100) NOT NULL,
@@ -78,7 +69,6 @@ CREATE TABLE dim_distributor (
     FOREIGN KEY (region_id) REFERENCES dim_region(region_id)
 );
 
--- 6. DIM_WORKSHOP
 CREATE TABLE dim_workshop (
     workshop_id VARCHAR(10) PRIMARY KEY,
     workshop_name VARCHAR(100) NOT NULL,
@@ -88,7 +78,6 @@ CREATE TABLE dim_workshop (
     FOREIGN KEY (region_id) REFERENCES dim_region(region_id)
 );
 
--- 7. DIM_PROMOTION
 CREATE TABLE dim_promotion (
     promotion_id VARCHAR(10) PRIMARY KEY,
     campaign_name VARCHAR(100) NOT NULL,
@@ -103,7 +92,6 @@ CREATE TABLE dim_promotion (
     campaign_objective TEXT NOT NULL
 );
 
--- 8. DIM_SKU_PARETO
 CREATE TABLE dim_sku_pareto (
     sku_id VARCHAR(20) PRIMARY KEY,
     total_revenue NUMERIC(12, 2) NOT NULL,
@@ -115,7 +103,6 @@ CREATE TABLE dim_sku_pareto (
     FOREIGN KEY (sku_id) REFERENCES dim_product(sku_id)
 );
 
--- 9. FACT_SALES (Grain: One row per transaction line item)
 CREATE TABLE fact_sales (
     transaction_id VARCHAR(20) NOT NULL,
     line_item_id VARCHAR(25) PRIMARY KEY,
@@ -147,7 +134,6 @@ CREATE TABLE fact_sales (
     FOREIGN KEY (sku_id) REFERENCES dim_product(sku_id)
 );
 
--- 10. FACT_INVENTORY (Grain: One row per SKU × Distributor × Observation Date)
 CREATE TABLE fact_inventory (
     date VARCHAR(10) NOT NULL,
     distributor_id VARCHAR(10) NOT NULL,
@@ -164,7 +150,6 @@ CREATE TABLE fact_inventory (
     FOREIGN KEY (sku_id) REFERENCES dim_product(sku_id)
 );
 
--- 11. FACT_DEMAND (Grain: One row per SKU × Region × Week)
 CREATE TABLE fact_demand (
     week_start_date VARCHAR(10) NOT NULL,
     sku_id VARCHAR(20) NOT NULL,
@@ -179,7 +164,6 @@ CREATE TABLE fact_demand (
     FOREIGN KEY (region_id) REFERENCES dim_region(region_id)
 );
 
--- Performance Indexes
 CREATE INDEX idx_sales_date ON fact_sales(date);
 CREATE INDEX idx_sales_sku ON fact_sales(sku_id);
 CREATE INDEX idx_sales_dist ON fact_sales(distributor_id);

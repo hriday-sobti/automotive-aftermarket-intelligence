@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for synthetic data generation and boundary conditions."""
+# Unit tests for synthetic data generation and entity creation.
 
 import pytest
 import numpy as np

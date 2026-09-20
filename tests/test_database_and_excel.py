@@ -1,4 +1,4 @@
-"""Comprehensive unit tests for database schema, SQL analytical views, and Excel scenario models."""
+# Unit tests for relational database tables, SQL analytical views, and Excel scenario models.
 
 import os
 import sqlite3

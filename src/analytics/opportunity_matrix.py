@@ -1,15 +1,5 @@
-"""Commercial Opportunity Matrix (Four-Quadrant Strategic Model).
+# Four-quadrant commercial opportunity segmentation for catalog SKUs.
 
-Categorizes SKUs and Distributors into four actionable strategic quadrants:
-1. High Sales / High Growth -> "Scale & Protect (Core Champions)"
-2. High Sales / Low Growth  -> "Cash Cows (Defend & Optimize Margins)"
-3. Low Sales / High Growth  -> "Emerging Opportunities (Invest & Expand Coverage)"
-4. Low Sales / Low Growth   -> "Rationalize / Review (Strategic Review / Phase-Out)"
-
-Thresholds established empirically using median splits to avoid arbitrary hard-coding.
-"""
-
-from typing import Dict, Tuple
 import numpy as np
 import pandas as pd
 
@@ -18,8 +8,7 @@ def compute_sku_opportunity_matrix(
     sales_df: pd.DataFrame,
     products_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Classify SKUs into the four-quadrant commercial opportunity matrix."""
-    # Compare 2025 vs 2024
+    """Classify catalog SKUs by comparing sales volume and annual growth."""
     yearly = (
         sales_df.groupby(["sku_id", "year"])
         .agg(
@@ -39,7 +28,7 @@ def compute_sku_opportunity_matrix(
     merged["units_2025"] = merged["units_2025"].fillna(0)
     merged["gross_profit_2025"] = merged["gross_profit_2025"].fillna(0.0)
 
-    # YoY Growth Rate
+    # Calculate growth and margins
     merged["yoy_growth_pct"] = np.where(
         merged["revenue_2024"] > 0,
         np.round(((merged["revenue_2025"] - merged["revenue_2024"]) / merged["revenue_2024"]) * 100.0, 2),
@@ -52,7 +41,7 @@ def compute_sku_opportunity_matrix(
         0.0
     )
 
-    # Median thresholds
+    # Split using median benchmarks rather than arbitrary cutoffs
     median_sales = merged["revenue_2025"].median()
     median_growth = merged["yoy_growth_pct"].median()
 

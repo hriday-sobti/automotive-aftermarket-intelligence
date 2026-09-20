@@ -1,24 +1,5 @@
-"""Trade marketing promotion effectiveness and financial uplift modeling.
+# B2B Trade marketing promotion evaluation and incremental margin analysis.
 
-Rigorous commercial methodology:
-1. De-seasonalized Rolling Baseline:
-   Evaluates non-promotional daily run-rates for target category and region in comparable non-promoted windows.
-2. Financial Decomposition:
-   - Baseline Units vs Promoted Units
-   - Incremental Units = Promoted Units - Baseline Units
-   - Discount Concession Cost = Sum(Quantity * (List Price - Net Unit Price))
-   - Baseline Gross Profit vs Promoted Gross Profit
-   - Incremental Gross Profit = Promoted Gross Profit - Baseline Gross Profit
-   - Total Promotional Cost = Discount Concession Cost + Allocated Campaign Budget
-3. Promotion Effectiveness Index (PEI):
-   PEI = Incremental Gross Profit / Total Promotional Cost
-4. Commercial Classification:
-   - Value Accretive (PEI > 1.0): Generated positive net dollar return above all promotion and discount investments.
-   - Volume Driver / Margin Dilutive (0.0 <= PEI <= 1.0): Increased units but eroded gross margin dollars.
-   - Value Destructive (PEI < 0.0): Incremental profit negative compared to baseline run-rate.
-"""
-
-from typing import Dict, List
 import numpy as np
 import pandas as pd
 
@@ -28,8 +9,8 @@ def evaluate_promotions(
     promotions_df: pd.DataFrame,
     products_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Evaluate commercial viability and incremental financial return across all campaigns."""
-    # Tag product categories on sales
+    """Evaluates campaign performance by comparing promoted sales against non-promoted baselines."""
+    # Tag product categories onto sales
     sales = sales_df.merge(products_df[["sku_id", "product_category"]], on="sku_id")
 
     results = []
@@ -44,7 +25,7 @@ def evaluate_promotions(
         budget = promo["budget_inr"]
         disc_pct = promo["discount_pct"]
 
-        # 1. Filter promoted sales
+        # Filter promoted sales
         p_sales = sales[sales["promotion_id"] == p_id]
 
         promoted_units = int(p_sales["quantity"].sum())
@@ -52,8 +33,7 @@ def evaluate_promotions(
         promoted_gp = float(p_sales["gross_profit"].sum())
         discount_cost = float((p_sales["quantity"] * (p_sales["list_price"] - p_sales["net_unit_price"])).sum())
 
-        # 2. Construct Non-Promotional Baseline
-        # Find transactions in the same category and region outside any promotion window
+        # Construct non-promoted baseline for matching category and region
         reg_filter = (sales["region_id"] == reg) if reg != "ALL" else pd.Series(True, index=sales.index)
         base_pool = sales[
             (sales["product_category"] == cat) &
@@ -61,10 +41,8 @@ def evaluate_promotions(
             (sales["promotion_id"] == "NONE")
         ]
 
-        # Calculate promo duration in days
         duration_days = (pd.to_datetime(end) - pd.to_datetime(start)).days + 1
 
-        # Baseline daily sales rate in non-promoted periods
         if not base_pool.empty:
             total_base_days = base_pool["date"].nunique()
             daily_base_units = base_pool["quantity"].sum() / max(1, total_base_days)
@@ -79,16 +57,15 @@ def evaluate_promotions(
             baseline_rev = float(np.round(promoted_rev * 0.75, 2))
             baseline_gp = float(np.round(promoted_gp * 0.80, 2))
 
-        # 3. Incremental Financials
+        # Incremental financials
         incremental_units = promoted_units - baseline_units
         incremental_rev = round(promoted_rev - baseline_rev, 2)
         incremental_gp = round(promoted_gp - baseline_gp, 2)
         total_promo_cost = round(discount_cost + budget, 2)
 
-        # Promotion Effectiveness Index
+        # Promotion Effectiveness Index: Incremental GP / Total Campaign Cost
         pei = round(incremental_gp / total_promo_cost, 2) if total_promo_cost > 0 else 0.0
 
-        # Commercial Classification
         if pei > 1.0:
             classification = "Value Accretive"
         elif pei >= 0.0:
