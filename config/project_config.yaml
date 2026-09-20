@@ -1,0 +1,57 @@
+# Project Master Configuration
+
+project:
+  name: "Automotive Aftermarket Sales & Trade Marketing Intelligence Platform"
+  version: "1.0.0"
+  random_seed: 42
+  currency: "INR"
+  currency_symbol: "₹"
+
+timeline:
+  start_date: "2024-01-01"
+  end_date: "2025-12-31"
+  duration_months: 24
+
+scale:
+  target_sales_rows: 110000
+  num_products: 150
+  num_distributors: 20
+  num_workshops: 120
+  num_regions: 4
+  num_promotions: 16
+
+database:
+  sqlite_path: "data/processed/aftermarket.db"
+  schema_ddl_path: "sql/schema/01_create_tables.sql"
+  views_ddl_path: "sql/analytics/01_analytical_views.sql"
+
+paths:
+  raw_dir: "data/raw"
+  interim_dir: "data/interim"
+  processed_dir: "data/processed"
+  reports_dir: "reports"
+  excel_dir: "excel/scenario_model"
+  powerbi_dir: "powerbi"
+
+inventory_risk:
+  service_level_z: 1.645 # 95% cycle service level
+  weights:
+    inventory_coverage: 0.35
+    demand_pressure: 0.25
+    lead_time_exposure: 0.20
+    demand_volatility: 0.10
+    stockout_history: 0.10
+  thresholds:
+    low: 30.0
+    watch: 55.0
+    high: 75.0
+
+forecasting:
+  train_split_date: "2025-08-31" # 20 months training
+  test_split_date: "2025-09-01"  # 4 months holdout evaluation
+  horizon_weeks: 16
+  baseline_lookback_weeks: 8
+
+opportunity_matrix:
+  sales_percentile_threshold: 50.0
+  growth_percentile_threshold: 50.0

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automotive-aftermarket-intelligence"
+version = "1.0.0"
+description = "Automotive Aftermarket Sales & Trade Marketing Intelligence Platform"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Lead Business Analyst & Analytics Engineer" }
+]
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "statsmodels>=0.14.0",
+    "openpyxl>=3.1.0",
+    "sqlalchemy>=2.0.0",
+    "pyyaml>=6.0.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
