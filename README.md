@@ -7,204 +7,205 @@
 [![Excel Scenario Model](https://img.shields.io/badge/Excel-Scenario%20Model-green.svg)](excel/)
 [![Author: Hriday Singh Sobti](https://img.shields.io/badge/Author-Hriday%20Singh%20Sobti-navy.svg)](https://github.com/hriday-sobti)
 
-> **Project Classification:** Enterprise Commercial Analytics & Decision-Support System  
-> **Author & Lead Analytics Engineer:** Hriday Singh Sobti (hridaysobti@gmail.com)  
-> **Data Notice:** Explicitly and consistently engineered using **Synthetic / Project-Generated Data** simulating a multi-tier automotive wholesale aftermarket ecosystem (`RANDOM_SEED = 42`).
+A commercial analytics platform built to solve four core problems faced by automotive aftermarket parts distributors: product prioritization, stockout exposure, trade promotion profitability, and linking demand forecasting directly to purchase order triggers.
+
+All transaction, inventory, and demand records were programmatically generated to mirror real-world automotive parts distribution dynamics (seasonal monsoon wear on brakes, summer cooling stress, wholesale trade discounts, and multi-tier supplier lead times) under a deterministic random seed (`RANDOM_SEED = 42`).
 
 ---
 
-## 1. Project Overview & Business Problem
+## The Business Questions
 
-In the commercial automotive aftermarket, manufacturers and wholesale distributors face four critical commercial questions:
-1. **Commercial Prioritization:** Which catalog SKUs and regional partners drive genuine gross margin, and how concentrated is top-line revenue?
-2. **Lost Sales & Availability Risk:** Where are stockout events occurring, and how can inventory buffer thresholds (Safety Stock, ROP) be dynamically sized to protect service levels without inflating working capital?
-3. **Trade Marketing ROI:** Are B2B wholesale trade promotions and invoice discounts actually driving incremental profit, or merely subsidizing baseline sales and eroding gross margin?
-4. **Demand Predictability & Actionability:** How can forward demand forecasts directly feed operational purchase order recommendations rather than ending as isolated statistical charts?
+In wholesale automotive parts distribution, commercial teams constantly wrestle with four operational questions:
 
-This platform integrates **synthetic domain simulation, automated data validation, relational star-schema modeling, advanced SQL window analytics, statistical time-series forecasting, a composite stockout risk model, a 4-quadrant strategic opportunity matrix, Power BI dashboards, and a live Excel scenario model** into a single reproducible analytics pipeline.
+1. **Product & Channel Prioritization:** Which SKUs actually generate operating profit versus vanity volume? How concentrated is revenue across our catalog?
+2. **Availability & Working Capital:** Which products are at immediate risk of stocking out during peak demand, and how should safety stock and reorder points be set so distributors don't tie up cash in slow-moving parts?
+3. **Trade Marketing ROI:** Do volume rebates and wholesale invoice discounts actually generate incremental gross profit, or are they just subsidizing volume the distributor would have bought anyway?
+4. **Actionable Forecasting:** How do we take a statistical time-series forecast and turn it into exact purchase order recommendations rather than leaving it as an isolated line chart?
 
 ---
 
-## 2. Integrated Analytics Architecture
+## System Architecture
 
 ```text
-[Synthetic Domain Generator (Python)]
+Synthetic Domain Generator (Python)
        │
        ▼
-[Raw Data Tables (88,659 Sales Lines, 314,934 Inventory Snapshots, 24 Months)]
+Raw Transactional Tables (88,659 sales lines, 314,934 stock snapshots, 24 months)
        │
        ▼
-[Pre-Flight Validation Engine (Rigorous mathematical reconciliation & FK checks)]
+Validation Engine (Pre-flight checks, zero foreign key orphans, exact financial reconciliation)
        │
        ▼
-[Relational Database / Star Schema (PostgreSQL DDL & SQLite Embedded Engine)]
+Dimensional Star Schema (PostgreSQL DDL & SQLite Embedded Engine)
        │
        ▼
-[SQL Analytical Layer (CTEs, Window Functions, Views & Data Quality Suite)]
+SQL Analytical Layer (Window functions, CTEs, YoY performance views, integrity checks)
        │
        ▼
 ┌───────────────────────┬─────────────────────────┬─────────────────────────┬─────────────────────────┐
 │ Sales Intelligence   │ Inventory & Stockout    │ Promotion Effectiveness │ Demand Forecasting      │
-│ - 80/20 Pareto Mix    │ - Days of Inventory     │ - De-seasonalized Base  │ - Naive / SMA / SES     │
-│ - YoY Revenue Growth  │ - Composite Risk Score  │ - Incremental Margin    │ - Holdout Backtesting   │
-│ - Margin Variance     │ - Safety Stock & ROP    │ - Promotion ROI (PEI)   │ - Reorder Quantities    │
+│ - 80/20 Pareto Mix    │ - Days of Inventory     │ - De-seasonalized Base  │ - Naive, SMA-4, SES     │
+│ - YoY Revenue Growth  │ - Composite Risk Score  │ - Incremental Margin    │ - 17-Wk Holdout Backtest│
+│ - Margin Variance     │ - Safety Stock & ROP    │ - Promotion ROI (PEI)   │ - Recommended Order Qty │
 └───────────────────────┴─────────────────────────┴─────────────────────────┴─────────────────────────┘
        │                                                                                 │
        ▼                                                                                 ▼
-[Power BI Semantic Models & 4-Page Dashboard Specs]                          [Manager Decision Simulator]
+Power BI Semantic Models & 4 Dashboard Layouts                               Manager Decision Simulator
        │                                                                                 │
        ▼                                                                                 ▼
-[Excel Commercial Scenario Model (.xlsx)]                                    [Executive Insights Report]
+Excel Commercial Scenario Model (.xlsx)                                      Executive Insights Briefing
 ```
 
 ---
 
-## 3. Visual Dashboard & Analytical Previews
+## Visual Analytics & Dashboard Previews
 
-| Executive Sales Overview | Inventory Stockout Risk Matrix |
+The platform exports structured analytical tables and visualizations designed for executive decision-making:
+
+| Category Revenue Contribution | Inventory Stockout Risk Matrix |
 | :---: | :---: |
 | ![Category Revenue](powerbi/screenshots/category_revenue.png) | ![Inventory Risk Matrix](powerbi/screenshots/inventory_risk_matrix.png) |
-| **80/20 Pareto Concentration Curve** | **Trade Promotion Effectiveness (PEI)** |
+| **80/20 Pareto SKU Concentration** | **Trade Promotion Effectiveness Index** |
 | ![Pareto Curve](powerbi/screenshots/pareto_curve.png) | ![Promotion Effectiveness](powerbi/screenshots/promotion_effectiveness.png) |
 
 ---
 
-## 4. Data Model & Star Schema
+## Data Model & Schema Design
 
-The database architecture is designed as a star schema with clearly defined fact and dimension table grains (`docs/data-model.md`):
+The database follows a dimensional star-schema architecture (`docs/data-model.md`):
 
-### Dimensional Entities
-- `DIM_DATE`: Calendar day grain (731 rows, 2024-01-01 to 2025-12-31).
-- `DIM_PRODUCT`: Catalog SKU grain (150 SKUs across Braking, Filtration, Electrical, Chassis, Thermal).
-- `DIM_DISTRIBUTOR`: Wholesale distributor partner grain (20 regional distributors).
-- `DIM_WORKSHOP`: Multi-brand service center customer grain (120 workshops).
-- `DIM_REGION`: Geographic territory grain (4 major regional clusters).
-- `DIM_PROMOTION`: Trade marketing campaign calendar (16 structured campaigns).
-- `DIM_SKU_PARETO`: 80/20 revenue concentration classification (Class A, B, C).
+### Dimensions
+- **`DIM_DATE`**: 731 calendar days (2024-01-01 to 2025-12-31).
+- **`DIM_PRODUCT`**: 150 SKUs across Braking, Filtration, Electrical, Chassis, and Thermal categories.
+- **`DIM_DISTRIBUTOR`**: 20 regional wholesale distributor accounts across 3 commercial tiers.
+- **`DIM_WORKSHOP`**: 120 garage and fleet service accounts.
+- **`DIM_REGION`**: 4 geographic territories (North, West, South, East) with vehicle parc multipliers.
+- **`DIM_PROMOTION`**: 16 trade campaigns with category and regional targeting rules.
+- **`DIM_SKU_PARETO`**: SKU-level cumulative revenue ranking (Class A: 80%, Class B: 15%, Class C: 5%).
 
-### Fact Tables
-- `FACT_SALES`: **Grain: One row per transaction line item** (88,659 rows).
-  - Exact financial reconciliation: $\text{Gross Profit} = \text{Revenue} - \text{Cost} = (\text{Quantity} \times \text{Net Unit Price}) - (\text{Quantity} \times \text{Cost Price})$.
-- `FACT_INVENTORY`: **Grain: One row per SKU × Distributor × Date snapshot** (314,934 rows).
-  - Rigid mass balance: $\text{Closing Stock} = \text{Opening Stock} + \text{Receipts} - \text{Units Sold}$.
-- `FACT_DEMAND`: **Grain: One row per SKU × Region × Week** (63,000 rows).
+### Facts
+- **`FACT_SALES`**: 88,659 lines. Reconciles: $\text{Gross Profit} = \text{Revenue} - \text{Cost} = (\text{Qty} \times \text{Net Price}) - (\text{Qty} \times \text{Cost Price})$.
+- **`FACT_INVENTORY`**: 314,934 stock records. Mass balance: $\text{Closing} = \text{Opening} + \text{Receipts} - \text{Sold}$.
+- **`FACT_DEMAND`**: 63,000 observations at SKU × Region × Week grain.
 
 ---
 
-## 5. Analytical Modules & Methodologies
+## Analytical Modules
 
-### Layer 1: Sales Performance & Pareto Concentration
-- **Pareto Intelligence:** Top 29.3% of catalog SKUs generate 80.0% of cumulative revenue (Class A champions concentrated in Braking Systems and Filtration).
-- **YoY Growth Analysis:** Reconciles FY 2024 (₹1,234.44M) vs FY 2025 (₹1,198.59M), surfacing channel inventory dynamics and post-promotional run-rates.
+### 1. Sales & Pareto Intelligence
+- **Revenue Concentration:** Class A SKUs (top 29.3% of catalog) drive 80.0% of total revenue, dominated by Braking Systems and Filtration.
+- **Top-Line Comparison:** FY 2024 generated ₹1,234.44M vs ₹1,198.59M in FY 2025 (-2.90% variance), reflecting distributor destocking after Q4-2024 promotional volume loading.
 
-### Layer 2: Inventory & Composite Stockout Risk Model
+### 2. Inventory Risk & Dynamic Reorder Points
 - **Days of Inventory (DOI):** $\text{DOI} = \frac{\text{Current Stock}}{\text{Average Daily Demand Rate}}$.
-- **Composite Stockout Risk Score ($0 - 100$):** Weighted multi-factor normalization:
-  - Inventory Coverage Exposure (35% weight)
-  - Demand Pressure Velocity (25% weight)
-  - Supplier Lead Time Exposure (20% weight)
-  - Demand Volatility / CV (10% weight)
-  - Historical Stockout Frequency (10% weight)
-- **Operational Replenishment Parameters:**
-  - $\text{Safety Stock} = \lceil Z \times \sigma_D \times \sqrt{L} \rceil$ ($Z = 1.645$ for 95% service level).
-  - $\text{Reorder Point} = (\bar{D} \times L) + \text{Safety Stock}$.
-  - $\text{Recommended Order Qty} = \max(0, \lceil \text{ROP} + (\bar{D} \times 30) - \text{Current Stock} \rceil)$.
+- **Composite Risk Score ($0 - 100$):** Weighted combination of coverage ratio (35%), demand velocity (25%), lead-time exposure (20%), demand volatility CV (10%), and historical stockouts (10%).
+- **Safety Stock & ROP:**
+  $$SS = \lceil 1.645 \times \sigma_D \times \sqrt{L} \rceil$$
+  $$\text{ROP} = (\bar{D} \times L) + SS$$
+  $$\text{Recommended Order Qty} = \max\left(0, \lceil \text{ROP} + (\bar{D} \times 30) - \text{Current Stock} \rceil\right)$$
 
-### Layer 3: Trade Promotion Effectiveness & Baseline Uplift
-- **De-seasonalized Rolling Baseline:** Evaluates non-promotional daily run-rates during matched non-promoted periods within identical categories and regions.
+### 3. Trade Promotion Effectiveness
+- **De-seasonalized Rolling Baseline:** Compares promoted sales against non-promoted periods within matching categories and regions.
 - **Promotion Effectiveness Index (PEI):**
   $$\text{PEI} = \frac{\text{Incremental Gross Profit}}{\text{Trade Discount Concession Cost} + \text{Campaign Fixed Budget}}$$
-- **Key Discovery:** Flat across-the-board discounting produced positive volume uplift (+12% to +32%) but negative incremental dollar margin due to deadweight loss on baseline volume.
+- **Finding:** Uncapped wholesale invoice discounts generated volume uplift (+12% to +32%) but diluted net dollar gross profit because distributors used the discounts on baseline volume they were already planning to buy.
 
-### Layer 4: Demand Forecasting Benchmark
-- Evaluates **Naive Baseline**, **4-Week Simple Moving Average (SMA)**, and **Simple Exponential Smoothing (SES)** across a 17-week holdout evaluation window (zero future leakage):
-  - **MAE:** 69.91 units
-  - **RMSE:** 82.65 units
-  - **MAPE:** 12.17%
-- Selected optimal smoothing model automatically feeds forward replenishment pipelines.
+### 4. Demand Forecasting
+- Backtested on a 17-week holdout window (2025-09-01 to 2025-12-31) with zero future information leakage:
+  - **Naive Model:** MAE 71.76 | RMSE 84.59 | MAPE 12.52%
+  - **4-Week SMA:** MAE 69.91 | RMSE 82.65 | MAPE 12.17%
+  - **Exponential Smoothing:** MAE 69.91 | RMSE 82.65 | MAPE 12.17%
+- The optimal smoothing forecast automatically feeds into the reorder calculation to determine purchase quantities.
 
-### Layer 5: Commercial Opportunity Matrix (4-Quadrant Model)
-- **Core Champions (44 SKUs):** High Sales / High Growth $\rightarrow$ Guarantee availability and prioritize trade support.
-- **Cash Cows (31 SKUs):** High Sales / Low Growth $\rightarrow$ Defend margins and eliminate price concessions.
-- **Emerging Stars (31 SKUs):** Low Sales / High Growth $\rightarrow$ Expand workshop distribution and trial packages.
-- **Under Review (44 SKUs):** Low Sales / Low Growth $\rightarrow$ Audit catalog fitment and review for phase-out.
-
----
-
-## 6. Decision-Support Deliverables
-
-### Microsoft Power BI Dashboard Suite
-Four fully documented dashboard pages with DAX semantic models (`powerbi/data-model.md`):
-1. **Executive Sales Overview:** Headline KPIs, monthly revenue trends, category contribution, and distributor ranking matrix.
-2. **Inventory Risk & Availability:** DOI scatter matrix, critical stockout watchlist, and distributor-level inventory health.
-3. **Trade Marketing & Financial Viability:** Waterfall analysis of incremental profit, discount concessions vs uplift, and campaign PEI.
-4. **Commercial Opportunity & Manager Simulator:** Interactive 4-quadrant opportunity map and real-time SKU-distributor 360° diagnostic card.
-
-### Microsoft Excel Commercial Scenario Model
-- **File:** `excel/scenario_model/trade_promotion_scenario_model.xlsx`
-- **Features:** Dynamic spreadsheet formulas simulating baseline units, discount tiers, price elasticity, and net incremental gross profit with an automated two-way sensitivity data table (Discount % vs Volume Uplift %).
-
-### Executive Insights Report
-- **Document:** `reports/executive-insights.md`
-- Structured executive briefing translating empirical findings into actionable business recommendations following the **Observation $\rightarrow$ Evidence $\rightarrow$ Business Implication $\rightarrow$ Suggested Action $\rightarrow$ Caveat** protocol.
+### 5. Four-Quadrant Commercial Opportunity Matrix
+- **Core Champions (44 SKUs):** High Sales / High Growth $\rightarrow$ Prioritize warehouse allocation and protect fill rates.
+- **Cash Cows (31 SKUs):** High Sales / Low Growth $\rightarrow$ Defend margins and stop discretionary trade discounting.
+- **Emerging Stars (31 SKUs):** Low Sales / High Growth $\rightarrow$ Introduce stocking incentives to expand garage penetration.
+- **Under Review (44 SKUs):** Low Sales / Low Growth $\rightarrow$ Evaluate catalog necessity and bundle with fast-movers.
 
 ---
 
-## 7. Quick Start & Execution Guide
+## Interactive Decision-Support Tools
 
-### Prerequisites
-- Python 3.10+ (Tested on Python 3.14.6 x64)
-- Standard scientific Python libraries: `pandas`, `numpy`, `statsmodels`, `openpyxl`, `sqlalchemy`, `pyyaml`, `pytest`, `matplotlib`
+### 1. Manager Decision Simulator (`src/analytics/decision_simulator.py`)
+A command-line/notebook diagnostic tool where selecting a Region, Distributor, Category, and SKU returns a complete commercial profile:
+- 2025 revenue and realized gross margin %
+- YoY revenue growth
+- Days of inventory on hand
+- Daily sales velocity
+- Stockout risk classification and primary driver
+- Prescriptive reorder recommendation
 
-### Single-Command Pipeline Execution
-Run the complete end-to-end platform with a single command:
+### 2. Excel Commercial Scenario Model (`excel/scenario_model/trade_promotion_scenario_model.xlsx`)
+A financial modeling workbook built with native dynamic formulas:
+- **Inputs (Yellow):** Baseline units, list price, COGS, base discount %, campaign budget, proposed promo discount %, expected uplift %.
+- **Calculations (Slate):** Net selling price, revenue, COGS, gross profit, trade discount cost.
+- **Outputs (Mint Green):** Net incremental profit, PEI ratio, margin dilution (bps), and commercial recommendation.
+- **Sensitivity Matrix:** Live two-way sensitivity table evaluating net profit across 5 discount tiers (8% to 16%) against 6 volume uplift levels (15% to 40%).
+
+### 3. Power BI Semantic Model (`powerbi/data-model.md`)
+Full star-schema relationships and DAX measure formulations for four dashboard views:
+1. Executive Sales Overview
+2. Inventory Health & Stockout Watchlist
+3. Trade Marketing & Promotional PEI
+4. Four-Quadrant Commercial Opportunity Matrix
+
+---
+
+## Quick Start & Project Execution
+
+### Setup
+```bash
+# Clone the repository
+git clone https://github.com/hriday-sobti/automotive-aftermarket-intelligence.git
+cd automotive-aftermarket-intelligence
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Run the Pipeline
+To regenerate the data, rebuild the database, export analytical models, build pre-rendered notebooks, and run the test suite:
 ```bash
 python scripts/run_pipeline.py
 ```
-This automatically executes:
-1. `scripts/generate_data.py`: Generates dimensions, demand, promotions, sales transactions, inventory flow, runs pre-flight validation, and cleans features.
-2. `scripts/build_database.py`: Builds the database schema, compiles indexes, and ingests all dimensional tables.
-3. `src/analytics/eda_engine.py`: Performs exploratory data analysis and generates statistical summaries.
-4. `scripts/export_analytics.py`: Computes risk scores, safety stock, promotion uplift, forecasting benchmarks, and opportunity matrices.
-5. `src/analytics/excel_scenario_generator.py`: Generates the live Excel commercial scenario workbook.
-6. `scripts/build_notebooks.py`: Compiles and executes all 6 Jupyter notebooks with rendered charts.
-7. `tests/`: Runs the complete automated test suite (**229 passing tests**) via `pytest`.
 
-### Run Automated Tests (229 Tests)
+### Run Tests
 ```bash
 python -m pytest tests/
 ```
+Runs 229 automated unit and integration tests across data generation, financial reconciliation, inventory formulas, forecasting splits, and Excel dynamic formulas.
 
 ---
 
-## 8. Repository Structure
+## Repository Structure
 
 ```text
 automotive-aftermarket-intelligence/
-├── README.md                                 # Primary project documentation
+├── README.md                                 # Project documentation and architecture
 ├── pyproject.toml                            # Build metadata and package configuration
 ├── requirements.txt                          # Pinned project dependencies
 │
 ├── config/
-│   └── project_config.yaml                   # Central project parameters and thresholds
+│   └── project_config.yaml                   # Simulation parameters, weights, and thresholds
 │
 ├── data/
-│   ├── raw/                                  # Raw synthetic dimension and fact outputs
-│   ├── interim/                              # Pre-flight validation reports and audit logs
-│   ├── processed/                            # Final star-schema CSVs and aftermarket.db
+│   ├── raw/                                  # Generated raw CSV tables
+│   ├── interim/                              # Pre-flight data validation reports
+│   ├── processed/                            # Cleaned star-schema tables & aftermarket.db
 │   └── README.md
 │
 ├── docs/
-│   ├── domain-understanding.md               # Aftermarket business ecosystem & value chain
-│   ├── blueprint-architecture.md             # Technical architecture & mathematical blueprint
-│   ├── data-dictionary.md                    # Formal dictionary for all tables and fields
-│   ├── data-model.md                         # Dimensional star-schema & grain specifications
-│   ├── methodology.md                        # Analytical methods & baseline standards
-│   ├── analytical-definitions.md             # Business formulas, inputs, and definitions
-│   ├── assumptions.md                        # Methodological assumptions & guardrails
-│   └── environment.md                        # Hardware, OS, and tool runtime specifications
+│   ├── domain-understanding.md               # Automotive aftermarket ecosystem and actors
+│   ├── blueprint-architecture.md             # Technical architecture and design choices
+│   ├── data-dictionary.md                    # Detailed table and column definitions
+│   ├── data-model.md                         # Star schema diagrams, grains, and keys
+│   ├── methodology.md                        # Analytical baseline and scoring methods
+│   ├── analytical-definitions.md             # Mathematical formulas and business metrics
+│   ├── assumptions.md                        # Project assumptions and known limitations
+│   └── environment.md                        # Hardware, OS, and runtime specifications
 │
-├── notebooks/                                # Executed Jupyter notebooks with charts
+├── notebooks/                                # Pre-rendered Jupyter notebooks with charts
 │   ├── 01_data_generation_validation.ipynb
 │   ├── 02_eda.ipynb
 │   ├── 03_sales_analysis.ipynb
@@ -213,60 +214,60 @@ automotive-aftermarket-intelligence/
 │   └── 06_forecasting.ipynb
 │
 ├── src/
-│   ├── data_generation/                      # Dimension, demand, promotion, sales & stock simulation
-│   ├── validation/                           # Pre-flight data validation & rejection logger
-│   ├── cleaning/                             # Feature engineering & Pareto classification
-│   ├── analytics/                            # Sales intelligence, opportunity matrix & simulator
-│   ├── inventory/                            # Composite stockout risk & safety stock logic
-│   ├── promotions/                           # Trade promotion baseline & uplift modeling
-│   ├── forecasting/                          # Time-series forecasting & holdout evaluation
-│   └── utils/                                # Config loaders and standardized logging
+│   ├── data_generation/                      # Dimensions, demand, sales, inventory simulation
+│   ├── validation/                           # Pre-flight integrity rules and reject logger
+│   ├── cleaning/                             # Feature engineering and Pareto classification
+│   ├── analytics/                            # Sales intelligence, opportunity matrix, simulator
+│   ├── inventory/                            # Stockout risk scoring and safety stock logic
+│   ├── promotions/                           # Baseline construction and uplift modeling
+│   ├── forecasting/                          # Holdout time-series forecasting benchmarks
+│   └── utils/                                # Config loader and structured logging
 │
 ├── sql/
-│   ├── schema/01_create_tables.sql           # ANSI SQL DDL with PK/FK constraints & indexes
-│   ├── staging/01_staging_tables.sql         # SQL staging buffer table definitions
-│   ├── transformations/01_load_facts.sql     # Staging to Fact/Dimension ETL transformations
+│   ├── schema/01_create_tables.sql           # ANSI SQL DDL with PK/FK constraints and indexes
+│   ├── staging/01_staging_tables.sql         # Staging buffer table definitions
+│   ├── transformations/01_load_facts.sql     # Staging to fact/dimension ETL transformations
 │   ├── analytics/01_analytical_views.sql     # Analytical views, CTEs, and window functions
-│   └── quality_checks/01_integrity_checks.sql# Automated SQL data integrity test suite
+│   └── quality_checks/01_integrity_checks.sql# SQL data integrity assertions
 │
 ├── powerbi/
-│   ├── README.md                             # Power BI setup and visual gallery
-│   ├── data-model.md                         # Semantic model schema & DAX measure formulas
-│   └── screenshots/                          # Rendered dashboard visual PNGs
+│   ├── README.md                             # Setup instructions and visual gallery
+│   ├── data-model.md                         # Semantic model schema and DAX measures
+│   └── screenshots/                          # Exported chart visuals
 │
 ├── excel/
-│   ├── README.md                             # Spreadsheet guide and calculation notes
-│   └── scenario_model/                       # Dynamic Excel commercial scenario workbook (.xlsx)
+│   ├── README.md                             # Scenario model documentation
+│   └── scenario_model/                       # Interactive trade promotion workbook (.xlsx)
 │
 ├── reports/
-│   ├── executive-insights.md                 # C-suite commercial findings & recommendations
-│   └── eda_statistical_summary.md            # Tabulated statistical EDA distributions
+│   ├── executive-insights.md                 # Findings and business recommendations
+│   └── eda_statistical_summary.md            # Statistical summary tables from EDA
 │
 ├── scripts/
-│   ├── generate_data.py                      # Data generation and validation runner
-│   ├── validate_data.py                      # Standalone validation runner
-│   ├── build_database.py                     # Database DDL compiler and data loader
+│   ├── generate_data.py                      # Data generation runner
+│   ├── validate_data.py                      # Pre-flight validation runner
+│   ├── build_database.py                     # Database compilation and table loader
 │   ├── export_analytics.py                   # Analytical decision layer export runner
-│   ├── build_notebooks.py                    # Pre-populated notebook & chart builder
-│   └── run_pipeline.py                       # Single-command master orchestrator
+│   ├── build_notebooks.py                    # Pre-rendered notebook and figure builder
+│   └── run_pipeline.py                       # Master pipeline runner
 │
 └── tests/
-    ├── test_boundary_parametric_cases.py     # 130 parametric stress and boundary tests
-    ├── test_data_generation.py               # 30 generator scale & entity tests
-    ├── test_validation.py                    # 15 pre-flight assertion & reject tests
-    ├── test_database_and_excel.py            # 13 SQL views & dynamic Excel formula tests
-    ├── test_inventory_logic.py               # 12 safety stock & risk scoring tests
-    ├── test_metrics.py                       # 8 sales intelligence & Pareto tests
-    ├── test_opportunity_and_simulator.py     # 8 4-quadrant & decision simulator tests
-    ├── test_forecasting.py                   # 7 holdout split & backtest error tests
-    └── test_platform.py                      # 6 reconciliation & platform tests
+    ├── test_boundary_parametric_cases.py     # 130 parametric boundary and stress tests
+    ├── test_data_generation.py               # 30 generator scale and entity tests
+    ├── test_validation.py                    # 15 validation assertion tests
+    ├── test_database_and_excel.py            # 13 SQL views and Excel formula tests
+    ├── test_inventory_logic.py               # 12 safety stock and risk scoring tests
+    ├── test_metrics.py                       # 8 sales KPI and Pareto tests
+    ├── test_opportunity_and_simulator.py     # 8 opportunity matrix and simulator tests
+    ├── test_forecasting.py                   # 7 forecasting split and error tests
+    └── test_platform.py                      # 6 platform reconciliation tests
 ```
 
 ---
 
-## 9. Analytical Traceability & Integrity Guarantee
+## Quality Assurance & Traceability
 
-Every number presented in executive reports, Power BI models, and analytical views is strictly traceable back to source calculations:
-- **Financial Reconciliation:** $\text{Gross Profit} \equiv \text{Revenue} - \text{Cost}$ across all 88,659 transactions with zero discrepancy.
-- **Physical Mass Balance:** $\text{Closing Stock} \equiv \text{Opening Stock} + \text{Receipts} - \text{Sold}$ across all 314,934 warehouse observations.
-- **No Data Fabrication:** All metrics originate from deterministic formulas executed over reproducible synthetic datasets.
+- **Financial Reconciliation:** $\text{Gross Profit} \equiv \text{Revenue} - \text{Cost}$ across all 88,659 transactions with zero rounding tolerance failure.
+- **Inventory Balance:** $\text{Closing Stock} \equiv \text{Opening Stock} + \text{Receipts} - \text{Sold}$ across all 314,934 records.
+- **Relational Integrity:** Zero foreign key orphans between facts and dimensions.
+- **Automated Testing:** 229 automated tests passing with `pytest` on Python 3.10+.

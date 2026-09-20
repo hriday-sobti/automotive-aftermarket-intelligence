@@ -1,35 +1,67 @@
-# Analytical Methodology & Statistical Standards
+# Methodology & Baseline Estimation Standards
 
-## 1. End-to-End Analytical Pipeline
-The platform implements a deterministic sequence connecting data generation to commercial decision-support:
+This document describes the baseline estimation techniques, statistical forecasting standards, and inventory modeling logic implemented in the project.
 
-```text
-Synthetic Domain Generator ──> Pre-Flight Validation ──> Relational Database
-                                                              │
-┌───────────────────────────┬─────────────────────────────────┴─────────────────────────────────┐
-│                           │                                                                   │
-▼                           ▼                                                                   ▼
-Sales & Pareto Intelligence  Inventory Risk & ROP Logic   Promotion Effectiveness   Demand Forecasting
-- Revenue Contribution      - DOI & Velocity              - De-seasonalized Baseline - Exponential Smoothing
-- YoY Growth Matrix         - Composite Risk Scoring      - Net Incremental Profit   - Holdout Evaluation
-```
+---
 
-## 2. Statistical Baseline Methodology
-Evaluating trade promotions without proper baselines distorts commercial conclusions:
-- **Baseline Construction:** Non-promoted transactions (`promotion_id = 'NONE'`) in the matching product category and region form the reference daily sales rate.
-- **Incremental Volume:** Promoted units minus expected baseline units over identical duration.
-- **Financial Uplift:** Incremental Gross Profit compared against the sum of trade discounts granted and fixed campaign marketing budgets.
+## 1. Trade Promotion Baseline Modeling
 
-## 3. Inventory Optimization Formulations
-- **Safety Stock Formulation:**
-  $$SS = \lceil Z \times \sigma_D \times \sqrt{L} \rceil$$
-  Where $Z = 1.645$ (95% Cycle Service Level), $\sigma_D$ is daily demand standard deviation over trailing 90 days, and $L$ is lead time in days.
-- **Reorder Point (ROP):**
-  $$\text{ROP} = (\bar{D} \times L) + SS$$
-- **Composite Risk Normalization:**
-  Weights: Inventory Coverage (35%), Demand Pressure (25%), Lead Time (20%), Volatility CV (10%), Stockout Rate (10%).
+Evaluating whether a trade marketing campaign was profitable requires an accurate estimate of what sales would have been without the campaign.
 
-## 4. Forecasting Validation
-- Strict temporal split: Training window through 2025-08-31, holdout window from 2025-09-01 through 2025-12-31.
-- No future information is leaked into model estimation.
-- Models evaluated on Out-of-Sample MAE, RMSE, and MAPE.
+### Why Prior-Period Comparisons Fail
+Comparing "promotion month sales vs previous month sales" produces misleading conclusions in automotive parts:
+1. **Seasonality:** Summer cooling parts naturally surge from March through May regardless of discounting.
+2. **Post-Promotional Dips:** Distributors frequently stockpile during promotions, depressing sales in the following month.
+
+### De-seasonalized Rolling Baseline Method
+To solve this, the baseline uses transactions where `promotion_id = 'NONE'` within the matching product category and geographic region:
+1. Filter sales records for the target category and region during non-promotional windows.
+2. Calculate the non-promoted daily run-rates:
+   $$\text{Daily Base Units} = \frac{\sum \text{Base Units}}{\text{Active Base Days}}$$
+   $$\text{Daily Base GP} = \frac{\sum \text{Base Gross Profit}}{\text{Active Base Days}}$$
+3. Scale daily run-rates over the campaign duration $D$:
+   $$\text{Baseline Units} = \text{ROUND}(\text{Daily Base Units} \times D)$$
+   $$\text{Baseline Gross Profit} = \text{ROUND}(\text{Daily Base GP} \times D, 2)$$
+4. Compute incremental variances:
+   $$\text{Incremental Units} = \text{Promoted Units} - \text{Baseline Units}$$
+   $$\text{Incremental GP} = \text{Promoted GP} - \text{Baseline GP}$$
+5. Compute the Promotion Effectiveness Index:
+   $$\text{PEI} = \frac{\text{Incremental GP}}{\text{Trade Discount Cost} + \text{Campaign Budget}}$$
+
+---
+
+## 2. Inventory Buffer Sizing Methodology
+
+### Normal Distribution Assumption
+Safety stock sizing assumes daily workshop demand over a 90-day window approximates a normal distribution with mean $\bar{D}$ and standard deviation $\sigma_D$.
+
+### Service Level Target
+A standard wholesale service level of **95% Cycle Service Level** ($Z = 1.645$) is applied:
+- 95% of replenishment cycles will conclude without a stockout.
+- For critical Tier-1 distributor channels or high-velocity Class A parts, $Z$ can be adjusted upward (e.g., $Z = 2.326$ for 99%).
+
+### Formula Consistency
+All inventory units are maintained at the physical SKU level:
+- Demand $\bar{D}$: Physical units per calendar day.
+- Lead Time $L$: Integer calendar days.
+- Safety Stock $SS = \lceil Z \times \sigma_D \times \sqrt{L} \rceil$: Whole physical units.
+- Reorder Point $\text{ROP} = \lceil \bar{D} \times L \rceil + SS$: Whole physical units.
+
+---
+
+## 3. Forecasting Evaluation Standards
+
+### Holdout Period Design
+To prevent data leakage, the 24-month horizon is split temporally:
+- **Training Window:** 2024-01-01 to 2025-08-31 (87 weeks).
+- **Holdout Evaluation Window:** 2025-09-01 to 2025-12-31 (17 weeks).
+- Zero observations from the holdout period are visible during model fitting.
+
+### Error Metrics
+Models are benchmarked on three standard out-of-sample metrics:
+1. **Mean Absolute Error (MAE):**
+   $$\text{MAE} = \frac{1}{N} \sum_{i=1}^{N} |y_i - \hat{y}_i|$$
+2. **Root Mean Squared Error (RMSE):**
+   $$\text{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2}$$
+3. **Mean Absolute Percentage Error (MAPE):**
+   $$\text{MAPE} = \frac{1}{N} \sum_{i=1}^{N} \left| \frac{y_i - \hat{y}_i}{\max(y_i, 1.0)} \right| \times 100$$
