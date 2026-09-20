@@ -117,7 +117,7 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
         ("Gross Profit", "=G9-G10", "=H9-H10", "=H11-G11", "₹#,##0.00"),
         ("Realized Gross Margin %", "=G11/G9", "=H11/H9", "=H12-G12", "0.0%"),
         ("Trade Discount Concession Cost", "=G7*(C7-G8)", "=H7*(C7-H8)", "=H13-G13", "₹#,##0.00"),
-        ("Total Promotion Cost (Discount + Budget)", "₹0.00", "=H13+C10", "=H14-G14", "₹#,##0.00"),
+        ("Total Promotion Cost (Discount + Budget)", 0.00, "=H13+C10", "=H14-G14", "₹#,##0.00"),
     ]
 
     for idx, (label, f_base, f_promo, f_diff, fmt) in enumerate(calc_rows, start=7):
