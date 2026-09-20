@@ -1,14 +1,4 @@
-"""Excel Commercial Scenario Model Generator.
-
-Builds a fully functioning, professional Microsoft Excel workbook (.xlsx)
-with dynamic spreadsheet formulas, explicit input parameters, calculation blocks,
-and scenario sensitivity tables for aftermarket trade promotion planning.
-
-Uses openpyxl with clean financial formatting, bold headers, and visible color hierarchy:
-- INPUTS: Pastel Yellow / Cream background
-- CALCULATIONS: Light Slate / Gray background
-- OUTPUTS / KPIS: Soft Mint Green background
-"""
+# Excel Commercial Scenario Model Generator.
 
 import os
 import sys
@@ -20,47 +10,52 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 
 def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade_promotion_scenario_model.xlsx"):
-    """Generate professional Excel trade promotion sensitivity model."""
+    """Generate trade promotion scenario workbook using universal Excel formatting."""
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Promotion Scenario Model"
 
     # Style definitions
-    font_title = Font(name="Segoe UI", size=16, bold=True, color="1F4E79")
-    font_subtitle = Font(name="Segoe UI", size=10, italic=True, color="595959")
-    font_header = Font(name="Segoe UI", size=11, bold=True, color="FFFFFF")
-    font_bold = Font(name="Segoe UI", size=10, bold=True)
-    font_regular = Font(name="Segoe UI", size=10)
+    font_title = Font(name="Calibri", size=16, bold=True, color="1F4E79")
+    font_subtitle = Font(name="Calibri", size=10, italic=True, color="595959")
+    font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    font_bold = Font(name="Calibri", size=10, bold=True)
+    font_regular = Font(name="Calibri", size=10)
 
     fill_navy = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
-    fill_input = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid") # Soft yellow
-    fill_output = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid") # Soft green
-    fill_calc = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid") # Light gray
+    fill_input = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+    fill_output = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+    fill_calc = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
 
     thin_border_side = Side(border_style="thin", color="D9D9D9")
     border_cell = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
-    thick_bottom = Border(bottom=Side(border_style="medium", color="1F4E79"))
+
+    # Universal Excel numeric formats without locale-specific currency glyphs
+    fmt_currency = "$#,##0.00"
+    fmt_currency_round = "$#,##0"
+    fmt_int = "#,##0"
+    fmt_pct = "0.0%"
+    fmt_ratio = "0.00"
 
     # Title Block
     ws["B2"] = "Automotive Aftermarket Commercial Promotion Scenario Simulator"
     ws["B2"].font = font_title
-    ws["B3"] = "Interactive B2B trade discount sensitivity & net incremental gross profit model"
+    ws["B3"] = "B2B wholesale trade discount sensitivity and net incremental margin model"
     ws["B3"].font = font_subtitle
 
-    # Section 1: Baseline Inputs (Cells B5:D10)
+    # Section 1: Baseline Inputs
     ws["B5"] = "1. BASELINE ASSUMPTIONS (NON-PROMOTED)"
-    ws["B5"].font = font_bold
-    ws["B5"].fill = fill_navy
     ws["B5"].font = font_header
+    ws["B5"].fill = fill_navy
     ws.merge_cells("B5:D5")
 
     inputs_baseline = [
-        ("B6", "Baseline Period Units (Run-rate)", "C6", 15000, "#,##0"),
-        ("B7", "Product List Price (₹)", "C7", 1850.00, "₹#,##0.00"),
-        ("B8", "Unit Cost of Goods Sold (₹)", "C8", 1150.00, "₹#,##0.00"),
-        ("B9", "Standard Wholesale Trade Discount %", "C9", 0.05, "0.0%"),
-        ("B10", "Campaign Fixed Promotional Budget (₹)", "C10", 350000.00, "₹#,##0.00")
+        ("B6", "Baseline Period Units (Run-rate)", "C6", 15000, fmt_int),
+        ("B7", "Product List Price ($)", "C7", 1850.00, fmt_currency),
+        ("B8", "Unit Cost of Goods Sold ($)", "C8", 1150.00, fmt_currency),
+        ("B9", "Standard Wholesale Trade Discount %", "C9", 0.05, fmt_pct),
+        ("B10", "Campaign Fixed Promotional Budget ($)", "C10", 350000.00, fmt_currency)
     ]
 
     for label_cell, label, val_cell, val, fmt in inputs_baseline:
@@ -74,15 +69,15 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
         ws[label_cell].border = border_cell
         ws[val_cell].border = border_cell
 
-    # Section 2: Promotional Proposal Inputs (Cells B12:D14)
+    # Section 2: Promotional Proposal Inputs
     ws["B12"] = "2. PROMOTIONAL PROPOSAL INPUTS"
     ws["B12"].font = font_header
     ws["B12"].fill = fill_navy
     ws.merge_cells("B12:D12")
 
     inputs_promo = [
-        ("B13", "Proposed Promotional Discount %", "C13", 0.12, "0.0%"),
-        ("B14", "Expected Observed Volume Uplift %", "C14", 0.28, "0.0%")
+        ("B13", "Proposed Promotional Discount %", "C13", 0.12, fmt_pct),
+        ("B14", "Expected Observed Volume Uplift %", "C14", 0.28, fmt_pct)
     ]
 
     for label_cell, label, val_cell, val, fmt in inputs_promo:
@@ -96,7 +91,7 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
         ws[label_cell].border = border_cell
         ws[val_cell].border = border_cell
 
-    # Section 3: Dynamic Model Calculations (Cells F5:I14)
+    # Section 3: Dynamic Model Calculations
     ws["F5"] = "3. BASELINE VS. PROMOTION FINANCIAL RECONCILIATION"
     ws["F5"].font = font_header
     ws["F5"].fill = fill_navy
@@ -110,14 +105,14 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
         ws[h_cell].border = border_cell
 
     calc_rows = [
-        ("Total Units Sold", "=C6", "=ROUND(C6*(1+C14), 0)", "=H7-G7", "#,##0"),
-        ("Net Selling Price / Unit", "=C7*(1-C9)", "=C7*(1-C13)", "=H8-G8", "₹#,##0.00"),
-        ("Gross Revenue", "=G7*G8", "=H7*H8", "=H9-G9", "₹#,##0.00"),
-        ("Total Cost of Goods Sold", "=G7*C8", "=H7*C8", "=H10-G10", "₹#,##0.00"),
-        ("Gross Profit", "=G9-G10", "=H9-H10", "=H11-G11", "₹#,##0.00"),
-        ("Realized Gross Margin %", "=G11/G9", "=H11/H9", "=H12-G12", "0.0%"),
-        ("Trade Discount Concession Cost", "=G7*(C7-G8)", "=H7*(C7-H8)", "=H13-G13", "₹#,##0.00"),
-        ("Total Promotion Cost (Discount + Budget)", 0.00, "=H13+C10", "=H14-G14", "₹#,##0.00"),
+        ("Total Units Sold", "=C6", "=ROUND(C6*(1+C14), 0)", "=H7-G7", fmt_int),
+        ("Net Selling Price / Unit", "=C7*(1-C9)", "=C7*(1-C13)", "=H8-G8", fmt_currency),
+        ("Gross Revenue", "=G7*G8", "=H7*H8", "=H9-G9", fmt_currency),
+        ("Total Cost of Goods Sold", "=G7*C8", "=H7*C8", "=H10-G10", fmt_currency),
+        ("Gross Profit", "=G9-G10", "=H9-H10", "=H11-G11", fmt_currency),
+        ("Realized Gross Margin %", "=G11/G9", "=H11/H9", "=H12-G12", fmt_pct),
+        ("Trade Discount Concession Cost", "=G7*(C7-G8)", "=H7*(C7-H8)", "=H13-G13", fmt_currency),
+        ("Total Promotion Cost (Discount + Budget)", 0.00, "=H13+C10", "=H14-G14", fmt_currency),
     ]
 
     for idx, (label, f_base, f_promo, f_diff, fmt) in enumerate(calc_rows, start=7):
@@ -135,16 +130,16 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
             if "Profit" in label:
                 ws[c].fill = fill_output
 
-    # Section 4: Key Decision Indicators (Cells B17:D21)
+    # Section 4: Key Decision Indicators
     ws["B17"] = "4. EXECUTIVE DECISION EVALUATION"
     ws["B17"].font = font_header
     ws["B17"].fill = fill_navy
     ws.merge_cells("B17:D17")
 
     kpi_rows = [
-        ("B18", "Net Incremental Gross Profit (₹)", "C18", "=I11", "₹#,##0.00"),
-        ("B19", "Promotion Effectiveness Index (PEI)", "C19", "=I11/H14", "0.00x"),
-        ("B20", "Gross Margin Dilution (Basis Points)", "C20", "=(G12-H12)*10000", "#,##0 bps"),
+        ("B18", "Net Incremental Gross Profit ($)", "C18", "=I11", fmt_currency),
+        ("B19", "Promotion Effectiveness Index (PEI)", "C19", "=I11/H14", fmt_ratio),
+        ("B20", "Gross Margin Dilution (Basis Points)", "C20", "=(G12-H12)*10000", "#,##0"),
         ("B21", "Commercial Recommendation", "C21", '=IF(C19>1.0, "APPROVE: Value Accretive", IF(C19>0.0, "REVIEW: Volume Driver / Margin Dilutive", "REJECT: Value Destructive"))', "@")
     ]
 
@@ -152,7 +147,7 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
         ws[label_cell] = label
         ws[label_cell].font = font_bold
         ws[val_cell] = formula
-        ws[val_cell].font = Font(name="Segoe UI", size=11, bold=True, color="1F4E79")
+        ws[val_cell].font = Font(name="Calibri", size=10, bold=True, color="1F4E79")
         ws[val_cell].fill = fill_output
         ws[val_cell].number_format = fmt
         ws[val_cell].alignment = Alignment(horizontal="right")
@@ -160,7 +155,7 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
         ws[val_cell].border = border_cell
 
     # Section 5: Sensitivity Data Table (Discount % vs Volume Uplift %)
-    ws["F17"] = "5. SENSITIVITY TABLE: NET INCREMENTAL GROSS PROFIT (₹)"
+    ws["F17"] = "5. SENSITIVITY TABLE: NET INCREMENTAL GROSS PROFIT ($)"
     ws["F17"].font = font_header
     ws["F17"].fill = fill_navy
     ws.merge_cells("F17:L17")
@@ -176,7 +171,7 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
     for c_idx, up in enumerate(uplifts, start=7):
         col_let = get_column_letter(c_idx)
         ws[f"{col_let}18"] = up
-        ws[f"{col_let}18"].number_format = "0.0%"
+        ws[f"{col_let}18"].number_format = fmt_pct
         ws[f"{col_let}18"].font = font_bold
         ws[f"{col_let}18"].fill = fill_calc
         ws[f"{col_let}18"].alignment = Alignment(horizontal="center")
@@ -184,7 +179,7 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
 
     for r_idx, disc in enumerate(discounts, start=19):
         ws[f"F{r_idx}"] = disc
-        ws[f"F{r_idx}"].number_format = "0.0%"
+        ws[f"F{r_idx}"].number_format = fmt_pct
         ws[f"F{r_idx}"].font = font_bold
         ws[f"F{r_idx}"].fill = fill_calc
         ws[f"F{r_idx}"].alignment = Alignment(horizontal="center")
@@ -192,20 +187,14 @@ def generate_excel_scenario_model(output_path: str = "excel/scenario_model/trade
 
         for c_idx, up in enumerate(uplifts, start=7):
             col_let = get_column_letter(c_idx)
-            # Dynamic spreadsheet formula for each matrix coordinate:
-            # PromoUnits = C6*(1+Up)
-            # NetPrice = C7*(1-Disc)
-            # PromoGP = PromoUnits * (NetPrice - C8)
-            # BaseGP = G11
-            # IncGP = PromoGP - BaseGP
             cell_formula = f"=ROUND(($C$6*(1+{col_let}$18))*(($C$7*(1-$F{r_idx}))-$C$8)-$G$11, 0)"
             ws[f"{col_let}{r_idx}"] = cell_formula
-            ws[f"{col_let}{r_idx}"].number_format = "₹#,##0"
+            ws[f"{col_let}{r_idx}"].number_format = fmt_currency_round
             ws[f"{col_let}{r_idx}"].font = font_regular
             ws[f"{col_let}{r_idx}"].alignment = Alignment(horizontal="right")
             ws[f"{col_let}{r_idx}"].border = border_cell
 
-    # Adjust Column Widths
+    # Column Widths
     col_widths = {
         "A": 3, "B": 38, "C": 18, "D": 4, "E": 4,
         "F": 35, "G": 20, "H": 22, "I": 22, "J": 16, "K": 16, "L": 16

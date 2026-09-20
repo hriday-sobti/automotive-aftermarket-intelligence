@@ -107,7 +107,7 @@ def test_excel_scenario_model_generation(tmp_path):
     ("B12", "2. PROMOTIONAL PROPOSAL INPUTS"),
     ("F5", "3. BASELINE VS. PROMOTION FINANCIAL RECONCILIATION"),
     ("B17", "4. EXECUTIVE DECISION EVALUATION"),
-    ("F17", "5. SENSITIVITY TABLE: NET INCREMENTAL GROSS PROFIT (₹)"),
+        ("F17", "5. SENSITIVITY TABLE: NET INCREMENTAL GROSS PROFIT ($)"),
 ])
 def test_excel_headers(tmp_path, cell, expected_val):
     output_xlsx = str(tmp_path / "test_headers.xlsx")
