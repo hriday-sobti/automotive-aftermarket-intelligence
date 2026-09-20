@@ -21,7 +21,7 @@ In the commercial automotive aftermarket, manufacturers and wholesale distributo
 3. **Trade Marketing ROI:** Are B2B wholesale trade promotions and invoice discounts actually driving incremental profit, or merely subsidizing baseline sales and eroding gross margin?
 4. **Demand Predictability & Actionability:** How can forward demand forecasts directly feed operational purchase order recommendations rather than ending as isolated statistical charts?
 
-This platform integrates **synthetic domain simulation, automated data validation, relational star-schema modeling, advanced SQL window analytics, statistical time-series forecasting, a composite stockout risk model, a 4-quadrant strategic portfolio matrix, Power BI dashboards, and a live Excel scenario model** into a single reproducible analytics pipeline.
+This platform integrates **synthetic domain simulation, automated data validation, relational star-schema modeling, advanced SQL window analytics, statistical time-series forecasting, a composite stockout risk model, a 4-quadrant strategic opportunity matrix, Power BI dashboards, and a live Excel scenario model** into a single reproducible analytics pipeline.
 
 ---
 
@@ -138,7 +138,7 @@ Four fully documented dashboard pages with DAX semantic models (`powerbi/data-mo
 1. **Executive Sales Overview:** Headline KPIs, monthly revenue trends, category contribution, and distributor ranking matrix.
 2. **Inventory Risk & Availability:** DOI scatter matrix, critical stockout watchlist, and distributor-level inventory health.
 3. **Trade Marketing & Financial Viability:** Waterfall analysis of incremental profit, discount concessions vs uplift, and campaign PEI.
-4. **Commercial Opportunity & Manager Simulator:** Interactive 4-quadrant portfolio map and real-time SKU-distributor 360° diagnostic card.
+4. **Commercial Opportunity & Manager Simulator:** Interactive 4-quadrant opportunity map and real-time SKU-distributor 360° diagnostic card.
 
 ### Microsoft Excel Commercial Scenario Model
 - **File:** `excel/scenario_model/trade_promotion_scenario_model.xlsx`

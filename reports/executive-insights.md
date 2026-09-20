@@ -57,7 +57,7 @@
 
 ---
 
-## 5. Strategic Opportunity Matrix (Four-Quadrant Portfolio)
+## 5. Strategic Commercial Opportunity Matrix (Four-Quadrant Framework)
 
 The 150 catalog SKUs were classified based on empirical median revenue (₹12.8M) and YoY growth (-2.8%):
 - **Core Champions (High Sales / High Growth - 44 SKUs):** Primary focus for working capital allocation and service level guarantees.

@@ -26,7 +26,7 @@ def evaluate_forecasting_models(
     demand_df: pd.DataFrame,
     split_date: str = "2025-09-01"
 ) -> Tuple[pd.DataFrame, Dict[str, float]]:
-    """Train candidate forecasting models and evaluate errors on holdout dataset."""
+    """Train comparative forecasting models and evaluate errors on holdout dataset."""
     df = demand_df.copy()
     df["week_start_date"] = pd.to_datetime(df["week_start_date"])
 

@@ -148,7 +148,7 @@ SUMX(
   - Campaign Name | Target Category | Region | Discount % | Budget | Incremental Units | Incremental GP | PEI | Commercial Classification
 
 ### Page 4: Commercial Opportunity & Manager Decision Support
-- **Header:** Four-Quadrant Strategic Portfolio Matrix & Decision Diagnostics
+- **Header:** Four-Quadrant Strategic Commercial Matrix & Decision Diagnostics
 - **Visual 1 (Four-Quadrant Scatter):**
   - X-Axis: 2025 Net Revenue (Log / Normalized scale)
   - Y-Axis: YoY Revenue Growth %

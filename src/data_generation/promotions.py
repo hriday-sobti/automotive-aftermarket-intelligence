@@ -78,7 +78,7 @@ def generate_promotions(
             "discount_pct": 0.14,
             "budget": 420000.0,
             "target_region": "REG-04", # East
-            "expected_uplift": 0.12, # Weak response / margin dilutive candidate
+            "expected_uplift": 0.12, # Weak response / margin dilutive campaign profile
             "objective": "Expand fleet garage penetration in eastern logistics corridors"
         },
         {
