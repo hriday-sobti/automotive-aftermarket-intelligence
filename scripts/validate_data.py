@@ -12,8 +12,7 @@ from src.validation.validator import DataValidator
 
 def main():
     logger = setup_logger("validate_data")
-    logger.info("Executing comprehensive data validation audit...")
-
+    logger.info("Running pre-flight data integrity assertions...")
     config = load_config()
     raw_dir = config["paths"]["raw_dir"]
     interim_dir = config["paths"]["interim_dir"]

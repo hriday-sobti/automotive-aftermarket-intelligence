@@ -1,15 +1,7 @@
-"""Master End-to-End Orchestrator Pipeline.
+"""Automotive Aftermarket Intelligence Pipeline Runner.
 
-Executes the entire platform sequentially:
-1. Synthetic Data Generation & Dimensions
-2. Pre-flight Data Validation & Rejection Audits
-3. Data Cleaning & Feature Engineering
-4. Relational Database Schema Execution & Ingestion
-5. SQL Analytical Views Compilation & Quality Assertions
-6. Statistical EDA Analysis
-7. Analytical Decision Layers (Risk, Reorder, Promo, Forecast, Opportunity)
-8. Excel Commercial Scenario Model Generation
-9. Test Suite Execution & Pipeline Verification
+Executes data processing, database ingestion, analytical modeling,
+scenario workbook generation, and automated test suites in sequence.
 """
 
 import os
