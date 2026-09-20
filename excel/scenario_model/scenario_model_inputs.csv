@@ -1,0 +1,8 @@
+Parameter,Value,Unit
+Baseline Period Units (Run-rate),15000.0,Units
+Product List Price (INR),1850.0,INR
+Unit Cost of Goods Sold (INR),1150.0,INR
+Standard Wholesale Trade Discount %,0.05,Percentage
+Campaign Fixed Promotional Budget (INR),350000.0,INR
+Proposed Promotional Discount %,0.12,Percentage
+Expected Observed Volume Uplift %,0.28,Percentage
